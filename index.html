@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cal By SSS</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        :root {
+            --primary-color: #007bff; /* A nice blue for buttons/accents */
+            --primary-hover-color: #0056b3;
+            --background-color: #f8f9fa; /* Lighter background */
+            --card-background: #ffffff;
+            --text-color: #343a40;
+            --border-color: #ced4da;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --focus-border-color: #80bdff; /* Lighter blue for focus */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items to the top for better content flow */
+            min-height: 100vh; /* Ensure it takes full viewport height */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 30px; /* Space between converter cards */
+            max-width: 1200px; /* Max width for the whole layout */
+            width: 100%;
+            justify-content: center; /* Center cards when they wrap */
+        }
+
+        .converter {
+            background-color: var(--card-background);
+            border-radius: 12px; /* Slightly more rounded corners */
+            padding: 30px;
+            flex: 1; /* Allow converters to grow and shrink */
+            min-width: 320px; /* Minimum width before wrapping */
+            max-width: 550px; /* Max width for individual converter */
+            box-shadow: 0 6px 15px var(--shadow-color); /* Softer, larger shadow */
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color); /* Use primary color for headings */
+            margin-bottom: 25px;
+            font-weight: 700; /* Bolder heading */
+        }
+
+        label {
+            display: block;
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500; /* Slightly bolder label */
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select { /* Added select to apply consistent styling */
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 18px; /* More space below inputs */
+            border: 1px solid var(--border-color);
+            border-radius: 6px; /* Slightly more rounded input fields */
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for focus */
+        }
+
+        input[type="text"]:disabled {
+            background-color: #e9ecef; /* Lighter disabled background */
+            cursor: not-allowed;
+            color: #6c757d; /* Slightly muted text color for disabled */
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus { /* Added select to apply consistent styling */
+            border-color: var(--focus-border-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Subtle focus ring */
+            outline: none;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px; /* More space between columns in a row */
+            flex-wrap: wrap; /* Allow columns to wrap */
+            margin-bottom: -5px; /* Adjust margin if inputs have default bottom margin */
+        }
+
+        .row > div {
+            flex: 1; /* Each div in a row takes equal space */
+            min-width: 130px; /* Minimum width for the inner div */
+        }
+
+        /* Adjust input margins within rows to maintain consistency */
+        .row input, .row select { /* Added select to apply consistent styling */
+            margin-bottom: 18px;
+        }
+
+        /* Result display style */
+        .result {
+            background: #e9fbe9;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            color: #222;
+        }
+        .result strong {
+            color: #000;
+        }
+
+        /* Specific adjustments for smaller screens */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column; /* Stack converters vertically on medium screens */
+                align-items: center; /* Center stacked converters */
+            }
+            .converter {
+                max-width: 450px; /* Limit width of stacked converters */
+                width: 95%; /* Adjust width for smaller screens */
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 15px;
+            }
+            .converter {
+                padding: 20px;
+                min-width: unset; /* Remove min-width to allow full flexibility */
+            }
+            h2 {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+            input[type="number"],
+            input[type="text"],
+            select { /* Added select for consistency */
+                padding: 10px;
+                font-size: 15px;
+                margin-bottom: 15px;
+            }
+            .row {
+                gap: 15px;
+            }
+            .row > div {
+                flex: 1 1 100%; /* Stack elements in rows on very small screens */
+            }
+        }
+
+/* --- Sticky Author Pop-up Styles (Existing) --- */
+.author-popup {
+    /* Positioning */
+    position: fixed;
+    bottom: 15px; /* Slightly closer to the bottom */
+    right: 15px;  /* Slightly closer to the right */
+    z-index: 1000; /* Ensures it stays on top of other content */
+
+    /* Sizing & Shape */
+    padding: 12px 18px; /* Reduced padding for compact size */
+    border-radius: 8px; /* Moderately rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Softer shadow */
+    border: 2px solid rgb(220, 220, 220); /* Thicker border (will be animated) */
+
+    /* Colors & Typography */
+    background: rgba(255, 255, 255, 0.9); /* Soft white background with slight transparency */
+    color: #555; /* Darker gray text */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Clean, readable font */
+    font-size: 13px; /* Smaller font size */
+    text-align: left; /* Align text to the left for better readability */
+    line-height: 1.3; /* Compact line spacing */
+
+    /* Initial state for animations */
+    opacity: 0;
+    transform: translateX(30px); /* Starts slightly to the right for slide-in effect */
+
+    /* Combined Animations: Entrance and RGB Border Pulse */
+    animation: subtleSlideIn 0.6s forwards ease-out, /* Pop-up slides in */
+                rgbBorderPulse 3s infinite linear forwards; /* Border color cycles */
+    animation-delay: 0.8s, 0.8s; /* Both animations start after 0.8 seconds */
+}
+
+/* Link Styling within the Pop-up */
+.author-popup a {
+    color: #008CBA; /* Elegant blue link color */
+    text-decoration: none; /* No underline by default */
+    font-weight: 600; /* Semi-bold link */
+    transition: color 0.3s ease-in-out, text-decoration 0.3s ease-in-out; /* Smooth transition for hover effects */
+}
+
+/* Link Hover Styling */
+.author-popup a:hover {
+    color: #005473; /* Darker blue on hover */
+    text-decoration: underline; /* Underline appears on hover */
+}
+
+/* Author Name Styling within the Pop-up */
+.author-popup strong {
+    display: inline; /* Keeps the name on the same line as "Developed by" */
+    font-size: 14px; /* Slightly larger font size for emphasis */
+    font-weight: 700; /* Bolder font weight */
+    margin-left: 5px; /* Small space after "Developed by" */
+}
+
+/* Paragraph Margin Reset for Compactness */
+.author-popup p {
+    margin: 0; /* Removes default paragraph margin */
+    padding: 0;
+}
+
+/* --- Keyframe Animations --- */
+
+/* Keyframes for the Pop-up Entrance Animation */
+@keyframes subtleSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px); /* Starts hidden and to the right */
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0); /* Ends visible at its position */
+    }
+}
+
+/* Keyframes for the RGB Border Color Animation */
+@keyframes rgbBorderPulse {
+    0% {
+        border-color: rgb(255, 0, 0);   /* Red */
+    }
+    33% {
+        border-color: rgb(0, 255, 0);   /* Green */
+    }
+    66% {
+        border-color: rgb(0, 0, 255);   /* Blue */
+    }
+    100% {
+        border-color: rgb(255, 0, 0);   /* Cycles back to Red for a smooth loop */
+    }
+}
+
+/* --- Responsive Adjustments for Pop-up --- */
+@media (max-width: 480px) {
+    .author-popup {
+        bottom: 10px; /* Closer to bottom on small screens */
+        right: 10px;  /* Closer to right on small screens */
+        padding: 8px 12px; /* Smaller padding */
+        font-size: 11px; /* Smaller base font size */
+    }
+    .author-popup strong {
+        font-size: 12px; /* Smaller name font size */
+    }
+}
+
+/* --- Refresh Button Styles --- */
+#refreshCache {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%; /* Make it circular */
+    width: 45px; /* Size of the button */
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px; /* Size of the icon */
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    z-index: 1001; /* Above other fixed elements */
+}
+
+#refreshCache:hover {
+    background-color: var(--primary-hover-color);
+    transform: rotate(30deg); /* Subtle rotation on hover */
+}
+
+/* --- New Custom Ad/Message Popup Styles --- */
+.ad-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker, more prominent overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* Ensure it's on top of everything */
+    visibility: hidden; /* Hidden by default */
+    opacity: 0; /* Fully transparent by default */
+    transition: visibility 0s, opacity 0.4s ease-in-out; /* Smooth fade */
+}
+
+.ad-popup-overlay.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+.ad-popup-content {
+    background: linear-gradient(135deg, #f0f8ff, #e0f2f7); /* Light gradient background */
+    padding: 35px;
+    border-radius: 15px; /* More rounded corners */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    transform: scale(0.8); /* Starts smaller for pop-in effect */
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Springy animation */
+    border: 2px solid var(--primary-color); /* Border matching primary color */
+}
+
+.ad-popup-overlay.show .ad-popup-content {
+    transform: scale(1); /* Scales to full size */
+}
+
+/* Removed ad-popup-close-button style as it will be removed from HTML */
+/* .ad-popup-close-button {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 32px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.ad-popup-close-button:hover {
+    color: #000;
+    transform: rotate(90deg);
+} */
+
+.ad-popup-content h3 {
+    color: #2c3e50; /* Darker heading color */
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.ad-popup-content p {
+    color: #4a4a4a;
+    margin-bottom: 30px;
+    line-height: 1.7;
+    font-size: 17px;
+}
+
+.ad-popup-buttons { /* New style for button container */
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between buttons */
+    margin-top: 20px;
+}
+
+.ad-popup-button {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 14px 35px;
+    border-radius: 8px; /* More rounded button */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 18px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    flex-shrink: 0; /* Prevent buttons from shrinking too much */
+}
+
+.ad-popup-button.close-button { /* Style for the new close button */
+    background-color: #6c757d; /* A neutral color for close */
+}
+
+.ad-popup-button.close-button:hover {
+    background-color: #5a6268;
+}
+
+
+.ad-popup-button:hover {
+    background-color: var(--primary-hover-color);
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+/* Responsive adjustments for new ad popup */
+@media (max-width: 576px) {
+    .ad-popup-content {
+        padding: 25px;
+        border-radius: 10px;
+    }
+    .ad-popup-content h3 {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+    .ad-popup-content p {
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+    /* .ad-popup-close-button {
+        font-size: 28px;
+        top: 10px;
+        right: 15px;
+    } */
+    .ad-popup-button {
+        padding: 12px 25px;
+        font-size: 16px;
+    }
+    .ad-popup-buttons {
+        flex-direction: column; /* Stack buttons vertically on very small screens */
+        gap: 10px;
+    }
+}
+    </style>
+</head>
+
+<body>
+    <div class="author-popup">
+        <p>Developed by <br> <a href="https://shatabdi.bio.link/" target="_blank" rel="noopener noreferrer"><strong>SSS</strong></a></p>
+    </div>
+
+    <button id="refreshCache" title="Refresh data (Stale-While-Revalidate)">&#x21BB;</button>
+
+    <div class="main-container">
+        <div class="converter">
+            <h2>Gram to Vori, Ana, Roti, Point Converter</h2>
+            <label for="gram">Input Gram (e.g., 10.5 or 5+2.5+3)</label>
+            <input type="text" id="gram" placeholder="Enter Grams">
+            <label for="pricePerGramConversion">Price per Gram</label>
+            <input type="number" id="pricePerGramConversion" placeholder="Price per Gram" step="0.01">
+
+            <div class="row">
+                <div>
+                    <label for="vatPercentageConversion">VAT (%)</label>
+                    <input type="number" id="vatPercentageConversion" placeholder="e.g., 5" step="0.01">
+                </div>
+                <div>
+                    <label for="makingChargeConversion">Making Charge</label>
+                    <input type="number" id="makingChargeConversion" placeholder="e.g., 500" step="0.01">
+                </div>
+            </div>
+
+            <div class="result" id="voriAnaRotiResult">
+                <strong>Conversion Result:</strong><br>
+                Vori: <strong id="displayResultVori">0</strong><br>
+                Ana: <strong id="displayResultAna">0</strong><br>
+                Roti: <strong id="displayResultRoti">0</strong><br>
+                Point: <strong id="displayResultPoint">0</strong><br>
+                Total Weight : <strong id="displayTotalWeightRoti">0.00</strong><br>
+                Total Price: <strong id="displayResultTotalPrice">0.00 BDT</strong>
+            </div>
+
+            <label for="resultVori" style="display: none;">Vori</label>
+            <input type="text" id="resultVori" placeholder="Result in Vori" disabled style="display: none;">
+            <label for="resultAna" style="display: none;">Ana</label>
+            <input type="text" id="resultAna" placeholder="Result in Ana" disabled style="display: none;">
+            <label for="resultRoti" style="display: none;">Roti</label>
+            <input type="text" id="resultRoti" placeholder="Result in Roti" disabled style="display: none;">
+            <label for="resultPoint" style="display: none;">Point</label>
+            <input type="text" id="resultPoint" placeholder="Result in Point" disabled style="display: none;">
+            <label for="totalWeightRoti" style="display: none;">Total Weight </label>
+            <input type="text" id="totalWeightRoti" placeholder="Result in Total Weight " disabled style="display: none;">
+            <label for="resultTotalPrice" style="display: none;">Total Price</label>
+            <input type="text" id="resultTotalPrice" placeholder="Total Price" disabled style="display: none;">
+        </div>
+
+        <div class="converter">
+            <h2>Vori, Ana, Roti, Point to Gram Converter</h2>
+
+            <div class="row">
+                <div>
+                    <label for="vori">Vori</label>
+                    <input type="number" id="vori" placeholder="Enter Vori">
+                </div>
+                <div>
+                    <label for="ana">Ana</label>
+                    <input type="number" max="15" min="0" id="ana" placeholder="Ana (0-15)">
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <label for="roti">Roti</label>
+                    <input type="number" max="5" min="0" id="roti" placeholder="Roti (0-5)">
+                </div>
+                <div>
+                    <label for="point">Point</label>
+                    <input type="number" max="9" min="0" id="point" placeholder="Point (0-9)">
+                </div>
+            </div>
+
+            <label for="pricePerGram">Price per Gram</label>
+            <input type="number" id="pricePerGram" placeholder="Price per Gram (optional)" step="0.01">
+
+            <div class="result" id="gramResult">
+                Result in Gram: <strong id="displayResultGram">0.0000</strong><br>
+                Total Price: <strong id="displayTotalPrice">0.00 BDT</strong>
+            </div>
+
+            <label for="resultGram" style="display: none;">Result in Gram</label>
+            <input type="text" id="resultGram" placeholder="Result in Gram" disabled style="display: none;">
+            <label for="totalPrice" style="display: none;">Total Price</label>
+            <input type="text" id="totalPrice" placeholder="Total Price" disabled style="display: none;">
+        </div>
+
+        <div class="converter">
+            <h2>Scrap Gold Price Calculator</h2>
+
+            <label for="voriPrice">24K Gold Price (Per Vori - BDT):</label>
+            <input type="number" id="voriPrice" value="155000" step="0.01">
+
+            <label for="unitTypeScrap">Select Purity Measurement Type:</label>
+            <select id="unitTypeScrap" onchange="toggleUnitInput()">
+                <option value="carat">Carat</option>
+                <option value="ana">Ana</option>
+            </select>
+
+            <div id="caratInput">
+                <label for="carat">Carat (e.g. 22):</label>
+                <input type="number" step="0.01" id="carat" value="22">
+            </div>
+
+            <div id="anaInput" style="display:none">
+                <label for="anaScrap">Ana (e.g. 14.66):</label>
+                <input type="number" step="0.01" id="anaScrap" value="14.66">
+            </div>
+
+            <label for="weight">Gold Weight (grams):</label>
+            <input type="number" step="0.01" id="weight" value="11.93">
+
+            <div class="result" id="scrapResult">
+                <strong>Calculation Result:</strong><br>
+                Ana Equivalent: <strong id="displayAnaEquivalent">0.00 Ana</strong><br>
+                24K Gold Price per Gram: <strong id="displayPerGram24k">0.00 BDT</strong><br>
+                Price Based on Purity: <strong id="displayTotalAnaValue">0.00 BDT</strong><br>
+                Scrap Gold Price per Gram: <strong id="displayPerGramScrap">0.00 BDT</strong><br>
+                Total Scrap Gold Value: <strong id="displayFinalPrice">0.00 BDT</strong>
+            </div>
+        </div>
+    </div>
+
+    <div id="customAdPopup" class="ad-popup-overlay">
+        <div class="ad-popup-content">
+            <h3 id="adPopupTitle"></h3>
+            <img id="adPopupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; margin-bottom: 20px; display: none;">
+            <p id="adPopupMessage"></p>
+            <div class="ad-popup-buttons">
+                <a href="javascript:void(0);" target="_blank" rel="noopener noreferrer" class="ad-popup-button" id="adPopupButton"></a>
+                <button class="ad-popup-button close-button" id="closeAdPopupButton">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // Your Firebase configuration (REPLACE WITH YOUR ACTUAL CONFIG)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBx7KbiLXNKRjAjhVC8CCnERBFk7oISHL0",
+        authDomain: "cal-by-sss.firebaseapp.com",
+        projectId: "cal-by-sss",
+        storageBucket: "cal-by-sss.firebasestorage.app",
+        messagingSenderId: "1065917326035",
+        appId: "1:1065917326035:web:7fd627b71a3a2ecf052a26",
+        databaseURL: "https://cal-by-sss-default-rtdb.asia-southeast1.firebaserule.app" // Corrected database URL
+    };
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // --- Service Worker Registration (Your Existing Code) ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+        });
+    }
+
+    // Refresh Button Logic (Your Existing Code)
+    document.getElementById('refreshCache').addEventListener('click', () => {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            console.log('Sending refresh message to Service Worker...');
+            navigator.serviceWorker.controller.postMessage({ type: 'REFRESH_CACHE' });
+            location.reload(); 
+        } else {
+            console.log('Service Worker not active or supported. Refreshing page normally.');
+            location.reload();
+        }
+    });
+
+    // --- Conversion Constants (Your Existing Code) ---
+    const GRAMS_PER_VORI = 11.664;
+    const GRAMS_PER_ANA = 0.729; // 1/16 Vori
+    const GRAMS_PER_ROTI = 0.1215; // 1/6 Ana
+    const GRAMS_PER_POINT = 0.01215; // 1/10 Roti
+
+    // --- Gram to Vori, Ana, Roti, Point Conversion (Your Existing Code) ---
+    function convertToVoriAnaRoti() {
+        let gramInputString = document.getElementById('gram').value;
+        let pricePerGramConversion = parseFloat(document.getElementById('pricePerGramConversion').value) || 0;
+        let vatPercentageConversion = parseFloat(document.getElementById('vatPercentageConversion').value) || 0;
+        let makingChargeConversion = parseFloat(document.getElementById('makingChargeConversion').value) || 0;
+
+        let totalGram = 0;
+        if (gramInputString) {
+            const parts = gramInputString.split('+');
+            let allPartsValid = true;
+            for (const part of parts) {
+                const parsedPart = parseFloat(part.trim());
+                if (isNaN(parsedPart)) {
+                    allPartsValid = false;
+                    break;
+                }
+                totalGram += parsedPart;
+            }
+
+            if (!allPartsValid || totalGram < 0) {
+                document.getElementById('displayResultVori').textContent = 0;
+                document.getElementById('displayResultAna').textContent = 0;
+                document.getElementById('displayResultRoti').textContent = 0;
+                document.getElementById('displayResultPoint').textContent = 0;
+                document.getElementById('displayTotalWeightRoti').textContent = '0.00';
+                document.getElementById('displayResultTotalPrice').textContent = '0.00 BDT';
+                return;
+            }
+        } else {
+            document.getElementById('displayResultVori').textContent = 0;
+            document.getElementById('displayResultAna').textContent = 0;
+            document.getElementById('displayResultRoti').textContent = 0;
+            document.getElementById('displayResultPoint').textContent = 0;
+            document.getElementById('displayTotalWeightRoti').textContent = '0.00';
+            document.getElementById('displayResultTotalPrice').textContent = '0.00 BDT';
+            return;
+        }
+
+        let totalPointsFloat = totalGram / GRAMS_PER_POINT;
+        let roundedTotalPoints = Math.floor(totalPointsFloat);
+
+        let vori = Math.floor(roundedTotalPoints / 960);
+        let remainingPoints = roundedTotalPoints % 960;
+
+        let ana = Math.floor(remainingPoints / 60);
+        remainingPoints %= 60;
+
+        let roti = Math.floor(remainingPoints / 10);
+        let point = remainingPoints % 10;
+
+        document.getElementById('displayResultVori').textContent = vori;
+        document.getElementById('displayResultAna').textContent = ana;
+        document.getElementById('displayResultRoti').textContent = roti;
+        document.getElementById('displayResultPoint').textContent = point;
+        
+        const totalWeightRoti = totalGram / GRAMS_PER_ROTI;
+        document.getElementById('displayTotalWeightRoti').textContent = totalWeightRoti.toFixed(2);
+
+        let basePrice = totalGram * pricePerGramConversion;
+        let vatAmount = (basePrice * vatPercentageConversion) / 100;
+        let totalPrice = basePrice + vatAmount + makingChargeConversion;
+
+        document.getElementById('displayResultTotalPrice').textContent = totalPrice.toFixed(2) + ' BDT';
+    }
+
+    // --- Vori, Ana, Roti, Point to Gram Conversion (Your Existing Code) ---
+    function convertToGram() {
+        let vori = parseFloat(document.getElementById('vori').value) || 0;
+        let ana = parseInt(document.getElementById('ana').value) || 0;
+        let roti = parseInt(document.getElementById('roti').value) || 0;
+        let point = parseInt(document.getElementById('point').value) || 0;
+
+        let pricePerGram = parseFloat(document.getElementById('pricePerGram').value) || 0;
+        let vatPercentage = parseFloat(document.getElementById('vatPercentageConversion').value) || 0;
+        let makingCharge = parseFloat(document.getElementById('makingChargeConversion').value) || 0;
+
+        if (ana < 0 || ana > 15 || roti < 0 || roti > 5 || point < 0 || point > 9 ||
+            (document.getElementById('ana').value !== '' && ana !== parseFloat(document.getElementById('ana').value)) ||
+            (document.getElementById('roti').value !== '' && roti !== parseFloat(document.getElementById('roti').value)) ||
+            (document.getElementById('point').value !== '' && point !== parseFloat(document.getElementById('point').value))) {
+            alert("Please enter valid integer values within specified ranges for Ana (0-15), Roti (0-5), and Point (0-9).");
+            return;
+        }
+
+        let gram = (vori * GRAMS_PER_VORI) +
+                    (ana * GRAMS_PER_ANA) +
+                    (roti * GRAMS_PER_ROTI) +
+                    (point * GRAMS_PER_POINT);
+
+        document.getElementById('displayResultGram').textContent = gram.toFixed(4);
+
+        let basePrice = gram * pricePerGram;
+        let totalPrice = basePrice;
+        if (pricePerGram > 0 || vatPercentage > 0 || makingCharge > 0) {
+            let vatAmount = (basePrice * vatPercentage) / 100;
+            totalPrice = basePrice + vatAmount + makingCharge;
+        } else {
+            totalPrice = 0;
+        }
+
+        document.getElementById('displayTotalPrice').textContent = totalPrice.toFixed(2) + ' BDT';
+    }
+
+    // --- Scrap Gold Price Calculator Functions (Your Existing Code) ---
+    function toggleUnitInput() {
+        const unitType = document.getElementById('unitTypeScrap').value;
+        document.getElementById('caratInput').style.display = unitType === 'carat' ? 'block' : 'none';
+        document.getElementById('anaInput').style.display = unitType === 'ana' ? 'block' : 'none';
+        calculateVangariPrice();
+    }
+
+    function calculateVangariPrice() {
+        const voriPrice = parseFloat(document.getElementById('voriPrice').value) || 0;
+        const weight = parseFloat(document.getElementById('weight').value) || 0;
+        const unitType = document.getElementById('unitTypeScrap').value;
+
+        let anaValue = 0;
+        if (unitType === 'carat') {
+            const carat = parseFloat(document.getElementById('carat').value) || 0;
+            anaValue = (carat / 24) * 16;
+        } else {
+            anaValue = parseFloat(document.getElementById('anaScrap').value) || 0;
+        }
+
+        const perGram24k = voriPrice / GRAMS_PER_VORI;
+        const perGramScrapPurityAdjusted = perGram24k * (anaValue / 16);
+        const finalPrice = perGramScrapPurityAdjusted * weight;
+
+        document.getElementById('displayAnaEquivalent').textContent = `${anaValue.toFixed(2)} Ana`;
+        document.getElementById('displayPerGram24k').textContent = `${perGram24k.toFixed(2)} BDT`;
+        document.getElementById('displayTotalAnaValue').textContent = `${(perGram24k * anaValue / 16).toFixed(2)} BDT`;
+        document.getElementById('displayPerGramScrap').textContent = `${perGramScrapPurityAdjusted.toFixed(2)} BDT`;
+        document.getElementById('displayFinalPrice').textContent = `${finalPrice.toFixed(2)} BDT`;
+    }
+
+    // --- NEW Custom Ad/Message Popup Functions ---
+    const customAdPopup = document.getElementById('customAdPopup');
+    const adPopupTitleElement = document.getElementById('adPopupTitle');
+    const adPopupMessageElement = document.getElementById('adPopupMessage');
+    const adPopupButton = document.getElementById('adPopupButton');
+    const adPopupImageElement = document.getElementById('adPopupImage'); 
+    const closeAdPopupButton = document.getElementById('closeAdPopupButton'); // NEW: Get the new close button
+
+    // Make functions globally accessible for onclick attributes
+    window.openCustomAdPopup = function() {
+        customAdPopup.classList.add('show');
+    }
+
+    window.closeCustomAdPopup = function() {
+        customAdPopup.classList.remove('show');
+    }
+
+    // Event listener for the new close button
+    closeAdPopupButton.addEventListener('click', () => {
+        window.closeCustomAdPopup();
+    });
+
+    customAdPopup.addEventListener('click', (event) => {
+        if (event.target === customAdPopup) {
+            // Keep this for clicking outside the content to close
+            window.closeCustomAdPopup();
+        }
+    });
+
+    // --- Firebase Logic for Popup Content ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // ... (Existing calculator initializations) ...
+        toggleUnitInput();
+        calculateVangariPrice();
+
+        document.getElementById('gram').addEventListener('input', convertToVoriAnaRoti);
+        document.getElementById('pricePerGramConversion').addEventListener('input', convertToVoriAnaRoti);
+        document.getElementById('vatPercentageConversion').addEventListener('input', convertToVoriAnaRoti);
+        document.getElementById('makingChargeConversion').addEventListener('input', convertToVoriAnaRoti);
+
+        document.getElementById('vori').addEventListener('input', convertToGram);
+        document.getElementById('ana').addEventListener('input', convertToGram);
+        document.getElementById('roti').addEventListener('input', convertToGram);
+        document.getElementById('point').addEventListener('input', convertToGram);
+        document.getElementById('pricePerGram').addEventListener('input', convertToGram);
+
+        document.getElementById('voriPrice').addEventListener('input', calculateVangariPrice);
+        document.getElementById('unitTypeScrap').addEventListener('change', toggleUnitInput);
+        document.getElementById('carat').addEventListener('input', calculateVangariPrice);
+        document.getElementById('anaScrap').addEventListener('input', calculateVangariPrice);
+        document.getElementById('weight').addEventListener('input', calculateVangariPrice);
+
+        // Listen for changes to 'popupContent' in Firebase Realtime Database
+        const popupRef = ref(database, 'popupContent');
+        onValue(popupRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.showPopup) {
+                adPopupTitleElement.textContent = data.title || "Important Announcement!";
+                adPopupMessageElement.textContent = data.message || "No message available.";
+                
+                // Handle image URL
+                if (data.imageUrl) {
+                    adPopupImageElement.src = data.imageUrl;
+                    adPopupImageElement.style.display = 'block'; // Show the image
+                } else {
+                    adPopupImageElement.src = ''; // Clear source
+                    adPopupImageElement.style.display = 'none'; // Hide the image
+                }
+
+                if (data.buttonText && data.buttonLink) {
+                    adPopupButton.textContent = data.buttonText;
+                    adPopupButton.href = data.buttonLink;
+                    adPopupButton.style.display = 'inline-block';
+                } else {
+                    adPopupButton.style.display = 'none';
+                    adPopupButton.href = 'javascript:void(0);';
+                }
+                
+                window.openCustomAdPopup(); // Show the popup
+            } else {
+                window.closeCustomAdPopup(); // Hide the popup if showPopup is false or data is null
+            }
+        }, (error) => {
+            console.error("Firebase Read Failed: " + error.code);
+            // Optionally, show a default message or handle the error
+        });
+    });
+</script>
+
+</body>
+</html>
